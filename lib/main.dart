@@ -3,6 +3,8 @@ import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/ui/screens/login_screen/login_screen.dart';
 import 'package:cab_driver/ui/screens/main_screen/main_screen.dart';
 import 'package:cab_driver/ui/screens/register_screen/register_screen.dart';
+import 'package:cab_driver/ui/screens/vehicle_info_screen/vehicle_info_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -11,11 +13,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  var currentUser = await FirebaseAuth.instance.currentUser;
+  var initPage = PagesRouteData.loginPage;
+  if (currentUser != null) {
+    initPage = PagesRouteData.mainPage;
+  }
+  runApp(MyApp(initPage));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initPage;
+  const MyApp(this.initPage, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +33,12 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Regular-Font',
         primarySwatch: Colors.blue,
       ),
-      initialRoute: PagesRouteData.loginPage,
+      initialRoute: initPage,
       routes: {
         PagesRouteData.mainPage: (context) => MainScreen(),
         PagesRouteData.loginPage: (context) => LoginScreen(),
         PagesRouteData.registerPage: (context) => RegisterScreen(),
+        PagesRouteData.vehicleDetailsPage: (context) => VehicleInfoScreen(),
       },
     );
   }
