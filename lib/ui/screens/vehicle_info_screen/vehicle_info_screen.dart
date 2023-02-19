@@ -8,11 +8,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+class VehicleInfoScreen extends StatelessWidget {
+  VehicleInfoScreen({super.key});
 
-  final _txtEmailControlle = TextEditingController();
-  final _txtPasswordControlle = TextEditingController();
+  final _txtCarModelControlle = TextEditingController();
+  final _txtCarColorControlle = TextEditingController();
+  final _txtCarNumberControlle = TextEditingController();
 
   late BuildContext _context;
 
@@ -37,7 +38,7 @@ class LoginScreen extends StatelessWidget {
                   height: 30,
                 ),
                 const Text(
-                  "Sign In as Driver",
+                  "Enter Vehicle Details",
                   style: TextStyle(
                       fontFamily: 'Bold-Font',
                       fontWeight: FontWeight.bold,
@@ -48,10 +49,10 @@ class LoginScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       TextField(
-                        controller: _txtEmailControlle,
-                        keyboardType: TextInputType.emailAddress,
+                        keyboardType: TextInputType.text,
+                        controller: _txtCarModelControlle,
                         decoration: const InputDecoration(
-                          label: Text("Email Address"),
+                          label: Text("Car model"),
                           labelStyle:
                               TextStyle(color: Colors.grey, fontSize: 12),
                         ),
@@ -61,12 +62,23 @@ class LoginScreen extends StatelessWidget {
                         height: 10,
                       ),
                       TextField(
-                        controller: _txtPasswordControlle,
-                        keyboardType: TextInputType.visiblePassword,
-                        obscuringCharacter: "*",
-                        obscureText: true,
+                        controller: _txtCarColorControlle,
+                        keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
-                          label: Text("Password"),
+                          label: Text("Car color"),
+                          labelStyle:
+                              TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextField(
+                        controller: _txtCarNumberControlle,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          label: Text("Car number"),
                           labelStyle:
                               TextStyle(color: Colors.grey, fontSize: 12),
                         ),
@@ -76,25 +88,8 @@ class LoginScreen extends StatelessWidget {
                         height: 50,
                       ),
                       MyCustomButton(
-                        onPress: login,
-                        title: "LOGIN",
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Don't have an account? "),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    PagesRouteData.registerPage,
-                                    (route) => false);
-                              },
-                              child: const Text("Sign Up here"))
-                        ],
+                        onPress: doRegisterCar,
+                        title: "PROCEED",
                       ),
                     ],
                   ),
@@ -107,11 +102,11 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  login() async {
+  void doRegisterCar() async {
     showDialog(
         context: _context,
         barrierDismissible: false,
-        builder: (context) => const ProgressDialog("Logging Progress"));
+        builder: (context) => const ProgressDialog("Register Car Progress"));
     if (checkFields()) {
       try {
         if (!await checkConnectivity()) {
@@ -119,46 +114,37 @@ class LoginScreen extends StatelessWidget {
           showSnackBar("No Internet Connection", _context);
           return;
         }
-        final _auth = FirebaseAuth.instance;
-        UserCredential _user = await _auth.signInWithEmailAndPassword(
-            email: _txtEmailControlle.text,
-            password: _txtPasswordControlle.text);
-        if (_user == null) {
-          Navigator.pop(_context);
-          showSnackBar("Wrong Email or Password", _context);
-        } else {
-          DatabaseReference ref =
-              FirebaseDatabase.instance.ref("driver/${_user.user!.uid}");
 
-          ref.once().then((DatabaseEvent dbEvent) {
-            if (dbEvent.snapshot.value != null) {
-              Map data = dbEvent.snapshot.value as Map;
-              UserData user = UserData();
-              user.email = data['email'];
-              user.fullName = data['fullName'];
-              user.phone = data['phone'];
-              user.id = _user.user!.uid;
-              Navigator.pushNamedAndRemoveUntil(_context,
-                  PagesRouteData.vehicleDetailsPage, (route) => false);
-            } else {
-              Navigator.pop(_context);
-              showSnackBar("User Profile Data Not Found", _context);
-            }
-          });
-        }
-      } on FirebaseAuthException catch (e) {
-        Navigator.pop(_context);
-        if (e.code == 'user-not-found') {
-          showSnackBar("No user found", _context);
-        } else if (e.code == 'wrong-password') {
-          showSnackBar("Wrong password", _context);
-        }
+        DatabaseReference ref =
+            FirebaseDatabase.instance.ref("driver/${UserData().id}");
+        Map carDetails = {
+          "carModel": _txtCarModelControlle.text,
+          "carColor": _txtCarColorControlle.text,
+          "carNumber": _txtCarNumberControlle.text,
+        };
+        ref.once().then((DatabaseEvent dbEvent) async {
+          if (dbEvent.snapshot.value != null) {
+            await setVehicle(carDetails);
+            Navigator.pushNamedAndRemoveUntil(
+                _context, PagesRouteData.mainPage, (route) => false);
+          } else {
+            Navigator.pop(_context);
+            showSnackBar("User Profile Data Not Found", _context);
+          }
+        });
       } catch (e) {
         Navigator.pop(_context);
+        showSnackBar('Error...', _context);
       }
     } else {
       Navigator.pop(_context);
     }
+  }
+
+  setVehicle(Map vehicleDetails) async {
+    DatabaseReference ref =
+        FirebaseDatabase.instance.ref("driver/${UserData().id}/vehicleDetails");
+    await ref.set(vehicleDetails);
   }
 
   Future<bool> checkConnectivity() async {
@@ -172,23 +158,18 @@ class LoginScreen extends StatelessWidget {
   }
 
   bool checkFields() {
-    if (_txtEmailControlle.text.length < 6 ||
-        !_txtEmailControlle.text.contains("@")) {
-      showSnackBar("Invalid Email Address", _context);
+    if (_txtCarModelControlle.text.length < 4) {
+      showSnackBar("Valid Car model has more than 3 characters", _context);
       return false;
     }
-
-    if (_txtPasswordControlle.text.length < 8) {
-      showSnackBar("Valid Password has more than 8 characters", _context);
+    if (_txtCarColorControlle.text.length < 3) {
+      showSnackBar("Invalid Car color", _context);
+      return false;
+    }
+    if (_txtCarNumberControlle.text.length < 5) {
+      showSnackBar("Invalid Car Number", _context);
       return false;
     }
     return true;
   }
-
-  // showSnackBar(String txt) {
-  //   var snackBar = SnackBar(
-  //     content: Text(txt),
-  //   );
-  //   ScaffoldMessenger.of(_context).showSnackBar(snackBar);
-  // }
 }
