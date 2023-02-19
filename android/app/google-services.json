@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "263838883666",
+    "firebase_url": "https://free-projects-55c94-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "free-projects-55c94",
+    "storage_bucket": "free-projects-55c94.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263838883666:android:3812cfdc4c435f1b68648b",
+        "android_client_info": {
+          "package_name": "com.kahtooei.cab_driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "263838883666-1nlfnjsnlnfrkddjv77iojtsvgmiiroe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYk_1szBMkLknoWW4RaS19IocGbwtozKQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "263838883666-1nlfnjsnlnfrkddjv77iojtsvgmiiroe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "263838883666-jmfonpkjbssme77g2tvnlqsv973gh492.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kahtooei.cabRider"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263838883666:android:4bc74009fde1242c68648b",
+        "android_client_info": {
+          "package_name": "com.kahtooei.cab_rider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "263838883666-1nlfnjsnlnfrkddjv77iojtsvgmiiroe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYk_1szBMkLknoWW4RaS19IocGbwtozKQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "263838883666-1nlfnjsnlnfrkddjv77iojtsvgmiiroe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "263838883666-jmfonpkjbssme77g2tvnlqsv973gh492.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kahtooei.cabRider"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
