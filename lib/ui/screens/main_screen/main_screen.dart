@@ -23,12 +23,18 @@ class _MainScreenState extends State<MainScreen>
   }
 
   @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: TabBarView(
           controller: tabController,
           physics: const NeverScrollableScrollPhysics(),
-          children: const [HomeTab(), EarningTab(), RatingTab(), AccountTab()]),
+          children: [HomeTab(), EarningTab(), RatingTab(), AccountTab()]),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
