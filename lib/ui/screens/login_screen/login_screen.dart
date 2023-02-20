@@ -138,8 +138,8 @@ class LoginScreen extends StatelessWidget {
               user.fullName = data['fullName'];
               user.phone = data['phone'];
               user.id = _user.user!.uid;
-              Navigator.pushNamedAndRemoveUntil(_context,
-                  PagesRouteData.vehicleDetailsPage, (route) => false);
+              Navigator.pushNamedAndRemoveUntil(
+                  _context, PagesRouteData.mainPage, (route) => false);
             } else {
               Navigator.pop(_context);
               showSnackBar("User Profile Data Not Found", _context);
