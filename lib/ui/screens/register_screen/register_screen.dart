@@ -103,9 +103,15 @@ class RegisterScreen extends StatelessWidget {
                       const SizedBox(
                         height: 50,
                       ),
-                      MyCustomButton(
-                        onPress: doRegister,
-                        title: "REGISTER",
+                      Row(
+                        children: [
+                          Expanded(
+                            child: MyCustomButton(
+                              onPress: doRegister,
+                              title: "REGISTER",
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 20,

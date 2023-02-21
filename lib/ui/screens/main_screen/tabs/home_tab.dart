@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
-import 'package:cab_driver/ui/screens/main_screen/widget/availability_button.dart';
+import 'package:cab_driver/ui/screens/main_screen/widget/confirm_sheet.dart';
+import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
@@ -81,12 +82,21 @@ class _HomeTabState extends State<HomeTab> {
           width: double.infinity,
           decoration: const BoxDecoration(color: MyColors.colorPrimary),
           child: Center(
-              child: AvailabilityButton(
-                  title: "GO ONLINE",
-                  onPress: () {
-                    goOnline();
-                    updateLocation();
-                  })),
+              child: SizedBox(
+            width: 200,
+            child: MyCustomButton(
+                title: "GO ONLINE",
+                backgroundColor: MyColors.colorOrange,
+                onPress: () {
+                  // goOnline();
+                  // updateLocation();
+                  showModalBottomSheet(
+                    isDismissible: false,
+                    context: context,
+                    builder: (context) => const ConfirmSheet(),
+                  );
+                }),
+          )),
         )
       ],
     );
