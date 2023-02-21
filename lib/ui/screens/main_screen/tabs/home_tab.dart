@@ -23,6 +23,7 @@ class _HomeTabState extends State<HomeTab> {
   late DatabaseReference driverDB;
   late UserData driver;
   late Position _currentPosition;
+  var geoLocator = Geolocator();
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,
@@ -80,7 +81,12 @@ class _HomeTabState extends State<HomeTab> {
           width: double.infinity,
           decoration: const BoxDecoration(color: MyColors.colorPrimary),
           child: Center(
-              child: AvailabilityButton(title: "GO ONLINE", onPress: goOnline)),
+              child: AvailabilityButton(
+                  title: "GO ONLINE",
+                  onPress: () {
+                    goOnline();
+                    updateLocation();
+                  })),
         )
       ],
     );
@@ -89,6 +95,7 @@ class _HomeTabState extends State<HomeTab> {
   setCurrentPosition() async {
     try {
       _currentPosition = await Geolocator.getCurrentPosition();
+
       LatLng currentPos =
           LatLng(_currentPosition.latitude, _currentPosition.longitude);
       CameraPosition currentCP = CameraPosition(target: currentPos, zoom: 14);
@@ -106,5 +113,18 @@ class _HomeTabState extends State<HomeTab> {
         driver.id, _currentPosition.latitude, _currentPosition.longitude);
     driverDB.set("waiting");
     driverDB.onValue.listen((event) {});
+  }
+
+  updateLocation() {
+    StreamSubscription<Position> currentPositionStream;
+    currentPositionStream = Geolocator.getPositionStream().listen((position) {
+      print("Listening To Current Location");
+      _currentPosition = position;
+      Geofire.setLocation(UserData().id, position.latitude, position.longitude);
+      LatLng currentPos =
+          LatLng(_currentPosition.latitude, _currentPosition.longitude);
+      CameraPosition currentCP = CameraPosition(target: currentPos, zoom: 14);
+      mapController.animateCamera(CameraUpdate.newCameraPosition(currentCP));
+    });
   }
 }
