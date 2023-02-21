@@ -3,7 +3,10 @@ import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:flutter/material.dart';
 
 class ConfirmSheet extends StatelessWidget {
-  const ConfirmSheet({super.key});
+  final bool isAvailable;
+  final Function onPress;
+  const ConfirmSheet(
+      {super.key, required this.isAvailable, required this.onPress});
 
   @override
   Widget build(BuildContext context) {
@@ -15,17 +18,19 @@ class ConfirmSheet extends StatelessWidget {
       ]),
       child: Column(
         children: [
-          const Text(
-            "GO ONLINE",
-            style: TextStyle(fontFamily: "Bold-Font", fontSize: 20),
+          Text(
+            !isAvailable ? "GO ONLINE" : "GO OFFLINE",
+            style: const TextStyle(fontFamily: "Bold-Font", fontSize: 20),
           ),
           const SizedBox(
             height: 20,
           ),
-          const Text(
-            "You are about to become available to receive trip requests",
+          Text(
+            !isAvailable
+                ? "You are about to become available to receive trip requests"
+                : "You will stop receiving new trip requests",
             textAlign: TextAlign.center,
-            style: TextStyle(color: MyColors.colorTextLight),
+            style: const TextStyle(color: MyColors.colorTextLight),
           ),
           const SizedBox(
             height: 30,
@@ -48,8 +53,9 @@ class ConfirmSheet extends StatelessWidget {
               Expanded(
                 child: MyCustomButton(
                   title: "CONFIRM",
-                  backgroundColor: MyColors.colorGreen,
-                  onPress: () {},
+                  backgroundColor:
+                      !isAvailable ? MyColors.colorGreen : Colors.red,
+                  onPress: onPress,
                 ),
               ),
             ],

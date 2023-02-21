@@ -18,6 +18,7 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  bool isAvailable = false;
   late GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
@@ -85,15 +86,18 @@ class _HomeTabState extends State<HomeTab> {
               child: SizedBox(
             width: 200,
             child: MyCustomButton(
-                title: "GO ONLINE",
-                backgroundColor: MyColors.colorOrange,
+                title: !isAvailable ? "GO ONLINE" : "GO OFFLINE",
+                backgroundColor:
+                    !isAvailable ? MyColors.colorOrange : MyColors.colorGreen,
                 onPress: () {
                   // goOnline();
                   // updateLocation();
                   showModalBottomSheet(
                     isDismissible: false,
                     context: context,
-                    builder: (context) => const ConfirmSheet(),
+                    builder: (context) => ConfirmSheet(
+                        isAvailable: isAvailable,
+                        onPress: isAvailable ? goOffline : goOnline),
                   );
                 }),
           )),
@@ -123,6 +127,21 @@ class _HomeTabState extends State<HomeTab> {
         driver.id, _currentPosition.latitude, _currentPosition.longitude);
     driverDB.set("waiting");
     driverDB.onValue.listen((event) {});
+    updateLocation();
+    setState(() {
+      isAvailable = true;
+    });
+    Navigator.pop(context);
+  }
+
+  goOffline() {
+    Geofire.removeLocation(UserData().id);
+    driverDB.onDisconnect();
+    driverDB.remove();
+    setState(() {
+      isAvailable = false;
+    });
+    Navigator.pop(context);
   }
 
   updateLocation() {
@@ -130,7 +149,10 @@ class _HomeTabState extends State<HomeTab> {
     currentPositionStream = Geolocator.getPositionStream().listen((position) {
       print("Listening To Current Location");
       _currentPosition = position;
-      Geofire.setLocation(UserData().id, position.latitude, position.longitude);
+      if (isAvailable) {
+        Geofire.setLocation(
+            UserData().id, position.latitude, position.longitude);
+      }
       LatLng currentPos =
           LatLng(_currentPosition.latitude, _currentPosition.longitude);
       CameraPosition currentCP = CameraPosition(target: currentPos, zoom: 14);
