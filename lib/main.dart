@@ -1,4 +1,5 @@
 import 'package:cab_driver/config/firebase_options.dart';
+import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/ui/screens/login_screen/login_screen.dart';
 import 'package:cab_driver/ui/screens/main_screen/main_screen.dart';
@@ -6,6 +7,7 @@ import 'package:cab_driver/ui/screens/register_screen/register_screen.dart';
 import 'package:cab_driver/ui/screens/vehicle_info_screen/vehicle_info_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -16,6 +18,18 @@ void main() async {
   var currentUser = await FirebaseAuth.instance.currentUser;
   var initPage = PagesRouteData.loginPage;
   if (currentUser != null) {
+    UserData user = UserData();
+    user.id = currentUser.uid;
+    user.email = currentUser.email;
+    DatabaseReference ref = FirebaseDatabase.instance.ref("driver/${user.id}");
+    ref.once().then((DatabaseEvent dbEvent) {
+      if (dbEvent.snapshot.value != null) {
+        Map data = dbEvent.snapshot.value as Map;
+        user.email = data['email'];
+        user.fullName = data['fullName'];
+        user.phone = data['phone'];
+      }
+    });
     initPage = PagesRouteData.mainPage;
   }
   runApp(MyApp(initPage));

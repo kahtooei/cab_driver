@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
 import 'package:cab_driver/ui/screens/main_screen/widget/availability_button.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -17,6 +20,8 @@ class _HomeTabState extends State<HomeTab> {
   late GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+  late DatabaseReference driverDB;
+  late UserData driver;
   late Position _currentPosition;
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -26,7 +31,10 @@ class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
+    driver = UserData();
     checkPermission();
+    driverDB =
+        FirebaseDatabase.instance.ref().child("driver/${driver.id}/newTrip");
   }
 
   checkPermission() async {
@@ -72,7 +80,7 @@ class _HomeTabState extends State<HomeTab> {
           width: double.infinity,
           decoration: const BoxDecoration(color: MyColors.colorPrimary),
           child: Center(
-              child: AvailabilityButton(title: "GO ONLINE", onPress: () {})),
+              child: AvailabilityButton(title: "GO ONLINE", onPress: goOnline)),
         )
       ],
     );
@@ -89,5 +97,14 @@ class _HomeTabState extends State<HomeTab> {
       //     latitude: _currentPosition.latitude,
       //     longitude: _currentPosition.longitude));
     } catch (e) {}
+  }
+
+  goOnline() {
+    UserData user = UserData();
+    Geofire.initialize("driversAvailable");
+    Geofire.setLocation(
+        driver.id, _currentPosition.latitude, _currentPosition.longitude);
+    driverDB.set("waiting");
+    driverDB.onValue.listen((event) {});
   }
 }
