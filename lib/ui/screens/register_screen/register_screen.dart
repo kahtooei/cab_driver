@@ -1,4 +1,5 @@
 import 'package:cab_driver/shared/resources/user_data.dart';
+import 'package:cab_driver/shared/services/push_notification_service.dart';
 import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/shared/utils/show_snackbar.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
@@ -164,7 +165,7 @@ class RegisterScreen extends StatelessWidget {
             "email": _txtEmailControlle.text,
             "phone": _txtPhoneControlle.text,
           });
-          ref.once().then((DatabaseEvent dbEvent) {
+          ref.once().then((DatabaseEvent dbEvent) async {
             if (dbEvent.snapshot.value != null) {
               Map data = dbEvent.snapshot.value as Map;
               UserData user = UserData();
@@ -172,6 +173,9 @@ class RegisterScreen extends StatelessWidget {
               user.fullName = data['fullName'];
               user.phone = data['phone'];
               user.id = dbEvent.snapshot.key;
+              PushNotificationService pushNotificationService =
+                  PushNotificationService();
+              await pushNotificationService.startService();
               Navigator.pushNamedAndRemoveUntil(_context,
                   PagesRouteData.vehicleDetailsPage, (route) => false);
             } else {

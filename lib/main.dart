@@ -9,6 +9,7 @@ import 'package:cab_driver/ui/screens/vehicle_info_screen/vehicle_info_screen.da
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -33,8 +34,7 @@ void main() async {
     });
     initPage = PagesRouteData.mainPage;
     PushNotificationService pushNotificationService = PushNotificationService();
-    await pushNotificationService.initialize();
-    await pushNotificationService.getToken();
+    await pushNotificationService.startService();
   }
 
   runApp(MyApp(initPage));
@@ -61,4 +61,11 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+}
+
+//background notification handler
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  String messageTitle = message.notification!.title!;
+  String messageBody = message.notification!.body!;
+  Map<String, dynamic> dataValues = message.data;
 }

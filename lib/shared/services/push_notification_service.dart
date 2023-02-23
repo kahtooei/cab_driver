@@ -1,18 +1,14 @@
+import 'package:cab_driver/main.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class PushNotificationService {
   FirebaseMessaging fcm = FirebaseMessaging.instance;
+
   Future initialize() async {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      //foreground message
-      print("Foreground Message ==> $message");
-    });
-    FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
-      //background message
-      print("Background Message ==> $message");
-    });
+    FirebaseMessaging.onMessage.listen(handleNewMessage);
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
   Future getToken() async {
@@ -26,5 +22,16 @@ class PushNotificationService {
     //subscribe to topics
     await FirebaseMessaging.instance.subscribeToTopic('allDrivers');
     await FirebaseMessaging.instance.subscribeToTopic('allUsers');
+  }
+
+  handleNewMessage(RemoteMessage message) async {
+    String messageTitle = message.notification!.title!;
+    String messageBody = message.notification!.body!;
+    Map<String, dynamic> dataValues = message.data;
+  }
+
+  Future startService() async {
+    await initialize();
+    await getToken();
   }
 }
