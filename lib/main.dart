@@ -1,5 +1,6 @@
 import 'package:cab_driver/config/firebase_options.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
+import 'package:cab_driver/shared/services/push_notification_service.dart';
 import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/ui/screens/login_screen/login_screen.dart';
 import 'package:cab_driver/ui/screens/main_screen/main_screen.dart';
@@ -31,7 +32,11 @@ void main() async {
       }
     });
     initPage = PagesRouteData.mainPage;
+    PushNotificationService pushNotificationService = PushNotificationService();
+    await pushNotificationService.initialize();
+    await pushNotificationService.getToken();
   }
+
   runApp(MyApp(initPage));
 }
 

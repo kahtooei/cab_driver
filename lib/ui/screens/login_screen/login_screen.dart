@@ -1,4 +1,5 @@
 import 'package:cab_driver/shared/resources/user_data.dart';
+import 'package:cab_driver/shared/services/push_notification_service.dart';
 import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/shared/utils/show_snackbar.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
@@ -136,7 +137,7 @@ class LoginScreen extends StatelessWidget {
           DatabaseReference ref =
               FirebaseDatabase.instance.ref("driver/${_user.user!.uid}");
 
-          ref.once().then((DatabaseEvent dbEvent) {
+          ref.once().then((DatabaseEvent dbEvent) async {
             if (dbEvent.snapshot.value != null) {
               Map data = dbEvent.snapshot.value as Map;
               UserData user = UserData();
@@ -144,6 +145,10 @@ class LoginScreen extends StatelessWidget {
               user.fullName = data['fullName'];
               user.phone = data['phone'];
               user.id = _user.user!.uid;
+              PushNotificationService pushNotificationService =
+                  PushNotificationService();
+              await pushNotificationService.initialize();
+              await pushNotificationService.getToken();
               Navigator.pushNamedAndRemoveUntil(
                   _context, PagesRouteData.mainPage, (route) => false);
             } else {
