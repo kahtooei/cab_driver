@@ -45,49 +45,50 @@ class PushNotificationService {
     await initialize();
     await getToken();
   }
-}
 
-Future<TripRequestModel> getRequestInfo(
-    String requestToken, BuildContext context) async {
-  showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const ProgressDialog("Fetching Request Info"));
-
-  TripRequestModel trip = TripRequestModel();
-  DatabaseReference ref =
-      FirebaseDatabase.instance.ref().child("rideRequest/$requestToken");
-  await ref.once().then((DatabaseEvent event) {
-    if (event.snapshot.value != null) {
-      Map snapshot = event.snapshot.value as Map;
-      trip.requestToken = requestToken;
-      trip.userId = "tempUserId";
-
-      trip.pickupLocation = snapshot['pickupLocation']['latitude'].toString();
-      trip.pickupLocation = snapshot['pickupLocation']['longitude'].toString();
-      trip.pickupCoordinate = LatLng(snapshot['pickupLocation']['latitude'],
-          snapshot['pickupLocation']['longitude']);
-
-      trip.destinationLocation =
-          snapshot['destinationLocation']['latitude'].toString();
-      trip.destinationLocation =
-          snapshot['destinationLocation']['longitude'].toString();
-      trip.destinationCoordinate = LatLng(
-          snapshot['destinationLocation']['latitude'],
-          snapshot['destinationLocation']['longitude']);
-
-      trip.paymentMethod = snapshot['paymentMethod'];
-      trip.riderName = snapshot['riderName'];
-    }
-  });
-  Navigator.pop(context);
-  if (trip.userId != null) {
+  Future<TripRequestModel> getRequestInfo(
+      String requestToken, BuildContext context) async {
     showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) => ShowNotificationDialog(trip),
-    );
-  }
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const ProgressDialog("Fetching Request Info"));
 
-  return trip;
+    TripRequestModel trip = TripRequestModel();
+    DatabaseReference ref =
+        FirebaseDatabase.instance.ref().child("rideRequest/$requestToken");
+    await ref.once().then((DatabaseEvent event) {
+      if (event.snapshot.value != null) {
+        Map snapshot = event.snapshot.value as Map;
+        trip.requestToken = requestToken;
+        trip.userId = "tempUserId";
+
+        trip.pickupLocation = snapshot['pickupLocation']['latitude'].toString();
+        trip.pickupLocation =
+            snapshot['pickupLocation']['longitude'].toString();
+        trip.pickupCoordinate = LatLng(snapshot['pickupLocation']['latitude'],
+            snapshot['pickupLocation']['longitude']);
+
+        trip.destinationLocation =
+            snapshot['destinationLocation']['latitude'].toString();
+        trip.destinationLocation =
+            snapshot['destinationLocation']['longitude'].toString();
+        trip.destinationCoordinate = LatLng(
+            snapshot['destinationLocation']['latitude'],
+            snapshot['destinationLocation']['longitude']);
+
+        trip.paymentMethod = snapshot['paymentMethod'];
+        trip.riderName = snapshot['riderName'];
+      }
+    });
+    Navigator.pop(context);
+    if (trip.userId != null) {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => ShowNotificationDialog(trip),
+      );
+    }
+
+    return trip;
+  }
 }
