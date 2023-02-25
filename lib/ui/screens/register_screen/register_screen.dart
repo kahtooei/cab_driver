@@ -173,9 +173,9 @@ class RegisterScreen extends StatelessWidget {
               user.fullName = data['fullName'];
               user.phone = data['phone'];
               user.id = dbEvent.snapshot.key;
-              PushNotificationService pushNotificationService =
-                  PushNotificationService();
-              await pushNotificationService.startService();
+              // PushNotificationService pushNotificationService =
+              //     PushNotificationService(_context);
+              // await pushNotificationService.startService();
               Navigator.pushNamedAndRemoveUntil(_context,
                   PagesRouteData.vehicleDetailsPage, (route) => false);
             } else {

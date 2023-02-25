@@ -1,3 +1,4 @@
+import 'package:cab_driver/shared/services/push_notification_service.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
 import 'package:cab_driver/ui/screens/main_screen/tabs/account_tab.dart';
 import 'package:cab_driver/ui/screens/main_screen/tabs/earning_tab.dart';
@@ -20,6 +21,13 @@ class _MainScreenState extends State<MainScreen>
   void initState() {
     super.initState();
     tabController = TabController(length: 4, vsync: this);
+    startPushNotification(context);
+  }
+
+  void startPushNotification(BuildContext context) async {
+    PushNotificationService pushNotificationService =
+        PushNotificationService(context);
+    await pushNotificationService.startService();
   }
 
   @override

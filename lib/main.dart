@@ -33,8 +33,6 @@ void main() async {
       }
     });
     initPage = PagesRouteData.mainPage;
-    PushNotificationService pushNotificationService = PushNotificationService();
-    await pushNotificationService.startService();
   }
 
   runApp(MyApp(initPage));
