@@ -9,6 +9,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 class PushNotificationService {
   FirebaseMessaging fcm = FirebaseMessaging.instance;

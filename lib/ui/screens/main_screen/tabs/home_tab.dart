@@ -92,8 +92,6 @@ class _HomeTabState extends State<HomeTab> {
                 backgroundColor:
                     !isAvailable ? MyColors.colorOrange : MyColors.colorGreen,
                 onPress: () {
-                  // goOnline();
-                  // updateLocation();
                   showModalBottomSheet(
                     isDismissible: false,
                     context: context,

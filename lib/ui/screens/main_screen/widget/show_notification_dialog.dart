@@ -1,15 +1,23 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:cab_driver/repository/models/trip_request_model.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:flutter/material.dart';
 
 class ShowNotificationDialog extends StatelessWidget {
-  const ShowNotificationDialog(this.trip, {super.key});
+  ShowNotificationDialog(this.trip, {super.key});
 
   final TripRequestModel trip;
+  AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
 
   @override
   Widget build(BuildContext context) {
+    audioPlayer.open(
+      Audio("assets/sounds/alert.mp3"),
+      autoStart: true,
+      showNotification: false,
+    );
+    audioPlayer.play();
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       backgroundColor: Colors.transparent,
@@ -94,7 +102,10 @@ class ShowNotificationDialog extends StatelessWidget {
               children: [
                 Expanded(
                     child: MyCustomButton(
-                  onPress: () => Navigator.pop(context),
+                  onPress: () {
+                    audioPlayer.stop();
+                    Navigator.pop(context);
+                  },
                   title: "DECLINE",
                   backgroundColor: Colors.white,
                   textColor: Colors.black87,
@@ -104,7 +115,9 @@ class ShowNotificationDialog extends StatelessWidget {
                 ),
                 Expanded(
                     child: MyCustomButton(
-                  onPress: () {},
+                  onPress: () {
+                    audioPlayer.stop();
+                  },
                   title: "ACCEPT",
                   textColor: Colors.white,
                   backgroundColor: MyColors.colorGreen,
