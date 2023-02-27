@@ -1,10 +1,10 @@
+import 'package:cab_driver/bloc/main_screen_bloc/main_screen_bloc.dart';
 import 'package:cab_driver/config/firebase_options.dart';
+import 'package:cab_driver/locator.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
-import 'package:cab_driver/shared/services/push_notification_service.dart';
 import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/ui/screens/login_screen/login_screen.dart';
 import 'package:cab_driver/ui/screens/main_screen/main_screen.dart';
-import 'package:cab_driver/ui/screens/main_screen/pages/accepted_request_page.dart';
 import 'package:cab_driver/ui/screens/register_screen/register_screen.dart';
 import 'package:cab_driver/ui/screens/vehicle_info_screen/vehicle_info_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,11 @@ void main() async {
     initPage = PagesRouteData.mainPage;
   }
 
-  runApp(MyApp(initPage));
+  await setUp();
+  // runApp(MyApp(initPage));
+  runApp(MultiBlocProvider(providers: [
+    BlocProvider<MainScreenBloc>(create: (_) => getIt<MainScreenBloc>()),
+  ], child: MyApp(initPage)));
 }
 
 class MyApp extends StatelessWidget {
