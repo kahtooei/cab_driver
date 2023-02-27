@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cab_driver/repository/models/trip_request_model.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
+import 'package:cab_driver/ui/screens/main_screen/pages/accepted_request_page.dart';
 import 'package:cab_driver/ui/screens/main_screen/widget/confirm_sheet.dart';
 import 'package:cab_driver/ui/screens/main_screen/widget/show_notification_dialog.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
@@ -92,21 +93,23 @@ class _HomeTabState extends State<HomeTab> {
                 backgroundColor:
                     !isAvailable ? MyColors.colorOrange : MyColors.colorGreen,
                 onPress: () {
-                  showModalBottomSheet(
-                    isDismissible: false,
-                    context: context,
-                    builder: (context) => ConfirmSheet(
-                        isAvailable: isAvailable,
-                        onPress: isAvailable ? goOffline : goOnline),
-                  );
-                  // TripRequestModel trip = TripRequestModel(
-                  //     destinationLocation:
-                  //         "destination location for a new location that we want to test it now ",
-                  //     pickupLocation: "pickup location");
-                  // showDialog(
+                  // showModalBottomSheet(
+                  //   isDismissible: false,
                   //   context: context,
-                  //   builder: (context) => ShowNotificationDialog(trip),
+                  //   builder: (context) => ConfirmSheet(
+                  //       isAvailable: isAvailable,
+                  //       onPress: isAvailable ? goOffline : goOnline),
                   // );
+                  TripRequestModel trip = TripRequestModel(
+                      destinationLocation:
+                          "destination location for a new location that we want to test it now ",
+                      pickupLocation: "pickup location",
+                      riderName: "Mohammad Kahtooei");
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AcceptedRequestPage(trip),
+                      ));
                 }),
           )),
         )

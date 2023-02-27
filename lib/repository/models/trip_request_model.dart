@@ -14,5 +14,9 @@ class TripRequestModel {
       {this.requestToken,
       this.userId,
       this.pickupLocation,
-      this.destinationLocation});
+      this.destinationLocation,
+      this.paymentMethod,
+      this.riderName,
+      this.pickupCoordinate,
+      this.destinationCoordinate});
 }
