@@ -4,8 +4,10 @@ import 'package:cab_driver/bloc/main_screen_bloc/main_screen_bloc.dart';
 import 'package:cab_driver/bloc/main_screen_bloc/main_screen_status.dart';
 import 'package:cab_driver/repository/models/direction.dart';
 import 'package:cab_driver/repository/models/trip_request_model.dart';
+import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -22,6 +24,7 @@ class AcceptedRequestPage extends StatefulWidget {
 
 class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   late GoogleMapController mapController;
+  late LatLng driverLocation;
 
   Completer<GoogleMapController> _controller = Completer();
   static const CameraPosition _kGooglePlex = CameraPosition(
@@ -35,11 +38,6 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   double mapPadding = 0;
   bool isLoaded = false;
   String duration = "";
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +62,10 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                 mapPadding = 270;
               });
               if (!isLoaded) {
+                driverLocation = BlocProvider.of<MainScreenBloc>(context)
+                    .state
+                    .currentPosition;
+                acceptTrip();
                 BlocProvider.of<MainScreenBloc>(context).add(
                     GetRouteDirectionEvent(
                         startPosition: BlocProvider.of<MainScreenBloc>(context)
@@ -115,15 +117,14 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
 
               //fitting polyline on map
 
-              LatLngBounds bounds = getBounds(state.currentPosition, end);
+              LatLngBounds bounds = getBounds(driverLocation, end);
               mapController
                   .animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
 
               //set markers
               Marker startMarker = Marker(
                   markerId: const MarkerId('start'),
-                  position: LatLng(state.currentPosition.latitude,
-                      state.currentPosition.longitude),
+                  position: driverLocation,
                   icon: BitmapDescriptor.defaultMarkerWithHue(
                       BitmapDescriptor.hueRed),
                   infoWindow: const InfoWindow(snippet: 'Your Location'));
@@ -144,8 +145,7 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                   strokeWidth: 5,
                   strokeColor: MyColors.colorGreen,
                   radius: 12,
-                  center: LatLng(state.currentPosition.latitude,
-                      state.currentPosition.longitude),
+                  center: driverLocation,
                   fillColor: MyColors.colorGreen);
 
               Circle endCircle = Circle(
@@ -292,5 +292,27 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
           southwest: LatLng(start.latitude, start.latitude),
           northeast: LatLng(end.latitude, end.longitude));
     }
+  }
+
+  acceptTrip() {
+    DatabaseReference ref = FirebaseDatabase.instance
+        .ref()
+        .child("rideRequest/${widget.trip.requestToken}");
+    ref.once().then((DatabaseEvent event) {
+      if (event.snapshot.value != null) {
+        UserData driver = UserData();
+        ref.child("status").set("accepted");
+        Map driverInfo = {
+          "driverId": driver.id,
+          "driverName": driver.fullName,
+          "driverPhone": driver.phone,
+          "driverLocation": {
+            "latitude": driverLocation.latitude,
+            "longitude": driverLocation.longitude
+          }
+        };
+        ref.child("driverInfo").set(driverInfo);
+      }
+    });
   }
 }
