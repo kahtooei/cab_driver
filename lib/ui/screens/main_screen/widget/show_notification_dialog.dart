@@ -2,13 +2,13 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:cab_driver/repository/models/trip_request_model.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
-import 'package:cab_driver/shared/utils/page_routes.dart';
 import 'package:cab_driver/shared/utils/show_snackbar.dart';
 import 'package:cab_driver/ui/screens/main_screen/pages/accepted_request_page.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:cab_driver/ui/widgets/progress_dialog.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 
 class ShowNotificationDialog extends StatelessWidget {
   ShowNotificationDialog(this.trip, {super.key});
@@ -152,6 +152,7 @@ class ShowNotificationDialog extends StatelessWidget {
       if (value != null) {
         if (value == trip.requestToken) {
           ref.set("accepted");
+          Geofire.removeLocation(driver.id);
           Navigator.push(
               context,
               MaterialPageRoute(

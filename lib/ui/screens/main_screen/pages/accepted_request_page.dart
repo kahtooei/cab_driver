@@ -25,6 +25,7 @@ class AcceptedRequestPage extends StatefulWidget {
 class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   late GoogleMapController mapController;
   late LatLng driverLocation;
+  late LatLng currentLocation;
 
   Completer<GoogleMapController> _controller = Completer();
   static const CameraPosition _kGooglePlex = CameraPosition(
@@ -38,9 +39,23 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   double mapPadding = 0;
   bool isLoaded = false;
   String duration = "";
+  BitmapDescriptor? carIcon;
+
+  createCarIcon() {
+    if (carIcon == null) {
+      ImageConfiguration imageConfiguration =
+          createLocalImageConfiguration(context, size: const Size(2, 2));
+      BitmapDescriptor.fromAssetImage(
+              imageConfiguration, "assets/images/car_android.png")
+          .then((icon) {
+        carIcon = icon;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    createCarIcon();
     return Scaffold(
       body: Stack(
         children: [
@@ -74,6 +89,7 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                         endPosition: widget.trip.pickupCoordinate!));
                 isLoaded = true;
               }
+              updateCurrentLocation();
             },
           ),
           BlocListener<MainScreenBloc, MainScreenState>(
@@ -313,6 +329,24 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
         };
         ref.child("driverInfo").set(driverInfo);
       }
+    });
+  }
+
+  updateCurrentLocation() {
+    Geolocator.getPositionStream().listen((Position position) {
+      currentLocation = LatLng(position.latitude, position.longitude);
+      Marker carLocation = Marker(
+          markerId: const MarkerId("carLocation"),
+          position: currentLocation,
+          icon: carIcon!,
+          infoWindow: const InfoWindow(title: 'car location'));
+      CameraPosition cameraPosition =
+          CameraPosition(target: currentLocation, zoom: 15);
+      mapController
+          .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+      _markers.removeWhere((element) => element.markerId == "carLocation");
+      _markers.add(carLocation);
+      setState(() {});
     });
   }
 }

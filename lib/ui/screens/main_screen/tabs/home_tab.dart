@@ -96,24 +96,24 @@ class _HomeTabState extends State<HomeTab> {
                 backgroundColor:
                     !isAvailable ? MyColors.colorOrange : MyColors.colorGreen,
                 onPress: () {
-                  // showModalBottomSheet(
-                  //   isDismissible: false,
-                  //   context: context,
-                  //   builder: (context) => ConfirmSheet(
-                  //       isAvailable: isAvailable,
-                  //       onPress: isAvailable ? goOffline : goOnline),
-                  // );
-                  TripRequestModel trip = TripRequestModel(
-                      destinationLocation:
-                          "destination location for a new location that we want to test it now ",
-                      pickupLocation: "pickup location",
-                      riderName: "Mohammad Kahtooei",
-                      pickupCoordinate: LatLng(26.99803, 54.2134767));
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AcceptedRequestPage(trip),
-                      ));
+                  showModalBottomSheet(
+                    isDismissible: false,
+                    context: context,
+                    builder: (context) => ConfirmSheet(
+                        isAvailable: isAvailable,
+                        onPress: isAvailable ? goOffline : goOnline),
+                  );
+                  // TripRequestModel trip = TripRequestModel(
+                  //     destinationLocation:
+                  //         "destination location for a new location that we want to test it now ",
+                  //     pickupLocation: "pickup location",
+                  //     riderName: "Mohammad Kahtooei",
+                  //     pickupCoordinate: LatLng(26.99803, 54.2134767));
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => AcceptedRequestPage(trip),
+                  //     ));
                 }),
           )),
         )
@@ -160,9 +160,7 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   updateLocation() {
-    StreamSubscription<Position> currentPositionStream;
-    currentPositionStream = Geolocator.getPositionStream().listen((position) {
-      print("Listening To Current Location");
+    Geolocator.getPositionStream().listen((position) {
       _currentPosition = position;
       BlocProvider.of<MainScreenBloc>(context).add(UpdateCurrentAddressEvent(
           latitude: position.latitude, longitude: position.longitude));
