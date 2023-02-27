@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cab_driver/bloc/main_screen_bloc/main_screen_bloc.dart';
 import 'package:cab_driver/repository/models/trip_request_model.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
@@ -9,6 +10,7 @@ import 'package:cab_driver/ui/screens/main_screen/widget/show_notification_dialo
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -27,6 +29,7 @@ class _HomeTabState extends State<HomeTab> {
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   late DatabaseReference driverDB;
   late UserData driver;
+
   late Position _currentPosition;
   var geoLocator = Geolocator();
   static const CameraPosition _kGooglePlex = CameraPosition(
@@ -104,7 +107,8 @@ class _HomeTabState extends State<HomeTab> {
                       destinationLocation:
                           "destination location for a new location that we want to test it now ",
                       pickupLocation: "pickup location",
-                      riderName: "Mohammad Kahtooei");
+                      riderName: "Mohammad Kahtooei",
+                      pickupCoordinate: LatLng(26.99803, 54.2134767));
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -160,6 +164,8 @@ class _HomeTabState extends State<HomeTab> {
     currentPositionStream = Geolocator.getPositionStream().listen((position) {
       print("Listening To Current Location");
       _currentPosition = position;
+      BlocProvider.of<MainScreenBloc>(context).add(UpdateCurrentAddressEvent(
+          latitude: position.latitude, longitude: position.longitude));
       if (isAvailable) {
         Geofire.setLocation(
             UserData().id, position.latitude, position.longitude);

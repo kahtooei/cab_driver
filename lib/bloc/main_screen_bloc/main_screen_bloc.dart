@@ -12,22 +12,14 @@ class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
   MainScreenRepository mainScreenRepository;
   MainScreenBloc(this.mainScreenRepository)
       : super(MainScreenState(
-          currentPosition: LoadingMainScreenStatus(),
+          currentPosition: const LatLng(37.42796133580664, -122.085749655962),
           predictionsList: CompletePredictionsStatus([]),
           routeDirection: EmptyDirectionsStatus(),
         )) {
-    //get current address
-    on<GetCurrentAddressEvent>((event, emit) async {
-      emit(state.copyWith(current_position: LoadingMainScreenStatus()));
-      RequestStatus request = await mainScreenRepository.getAddressWithPosition(
-          event.longitude, event.latitude);
-      if (request is SuccessRequest) {
-        emit(state.copyWith(
-            current_position: CompleteMainScreenStatus(request.response)));
-      } else {
-        emit(state.copyWith(
-            current_position: FailedMainScreenStatus(request.error!)));
-      }
+    //update current address
+    on<UpdateCurrentAddressEvent>((event, emit) async {
+      emit(state.copyWith(
+          current_position: LatLng(event.latitude, event.longitude)));
     });
 
     //get predictions
@@ -61,7 +53,7 @@ class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
     //reset app after click arrow back button
     on<ResetAppEvent>((event, emit) async {
       emit(state.copyWith(
-        current_position: LoadingMainScreenStatus(),
+        current_position: const LatLng(37.42796133580664, -122.085749655962),
         predictions_list: CompletePredictionsStatus([]),
         route_direction: EmptyDirectionsStatus(),
       ));

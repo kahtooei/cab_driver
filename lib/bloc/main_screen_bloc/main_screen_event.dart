@@ -3,10 +3,10 @@ part of 'main_screen_bloc.dart';
 @immutable
 abstract class MainScreenEvent {}
 
-class GetCurrentAddressEvent extends MainScreenEvent {
+class UpdateCurrentAddressEvent extends MainScreenEvent {
   final double latitude;
   final double longitude;
-  GetCurrentAddressEvent({required this.latitude, required this.longitude});
+  UpdateCurrentAddressEvent({required this.latitude, required this.longitude});
 }
 
 class GetPredictionsListEvent extends MainScreenEvent {

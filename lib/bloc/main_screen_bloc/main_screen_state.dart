@@ -2,7 +2,7 @@ part of 'main_screen_bloc.dart';
 
 @immutable
 class MainScreenState {
-  final MainScreenStatus currentPosition;
+  final LatLng currentPosition;
   final PredictionsStatus predictionsList;
   final DirectionsStatus routeDirection;
   const MainScreenState({
@@ -12,7 +12,7 @@ class MainScreenState {
   });
 
   MainScreenState copyWith({
-    MainScreenStatus? current_position,
+    LatLng? current_position,
     PredictionsStatus? predictions_list,
     DirectionsStatus? route_direction,
   }) {
