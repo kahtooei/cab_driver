@@ -6,6 +6,7 @@ import 'package:cab_driver/repository/models/direction.dart';
 import 'package:cab_driver/repository/models/trip_request_model.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
+import 'package:cab_driver/ui/screens/main_screen/widget/end_trip_dialog.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:cab_driver/ui/widgets/progress_dialog.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -26,6 +27,7 @@ class AcceptedRequestPage extends StatefulWidget {
 
 class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   late DatabaseReference ref;
+  late StreamSubscription<Position> currentPositionStream;
   late GoogleMapController mapController;
   late LatLng currentLocation;
 
@@ -325,10 +327,10 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                               buttonTitle = "START TRIP";
                               buttonColor = MyColors.colorAccentPurple;
                             });
-                            ref.child("status").set("arrived");
+                            ref.child("status").set(status);
                           } else if (status == "arrived") {
                             status = "onTrip";
-                            ref.child("status").set("onTrip");
+                            ref.child("status").set(status);
                             timer = Timer.periodic(
                               const Duration(seconds: 1),
                               (timer) {
@@ -339,6 +341,25 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                               buttonTitle = "END TRIP";
                               buttonColor = Colors.redAccent;
                             });
+                          } else if (status == "onTrip") {
+                            timer.cancel();
+                            currentPositionStream.cancel();
+                            int faires = estimateFares();
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => EndTripDialog(
+                                  widget.trip.paymentMethod ?? "cash", faires),
+                            );
+                            status = "endTrip";
+                            ref.child("status").set(status);
+                            ref.child("faires").set("\$$faires");
+                            updateEarning(faires);
+                            DatabaseReference driverref = FirebaseDatabase
+                                .instance
+                                .ref()
+                                .child("driver/${UserData().id}/newTrip");
+                            driverref.set("waiting");
                           }
                         },
                         title: buttonTitle,
@@ -396,7 +417,9 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
 
   updateCurrentLocation() {
     double rotation = 0;
-    Geolocator.getPositionStream().listen((Position position) {
+
+    currentPositionStream =
+        Geolocator.getPositionStream().listen((Position position) {
       rotation = mp.SphericalUtil.computeHeading(
               mp.LatLng(currentLocation.latitude, currentLocation.longitude),
               mp.LatLng(position.latitude, position.longitude))
@@ -415,6 +438,34 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
       _markers.removeWhere((element) => element.markerId == "carLocation");
       _markers.add(carLocation);
       setState(() {});
+    });
+  }
+
+  int estimateFares() {
+    // $0.3 : per KM
+    // $0.2 : per Minute
+    // #3.0 : base
+    var direction = (BlocProvider.of<MainScreenBloc>(context)
+            .state
+            .routeDirection as CompleteDirectionsStatus)
+        .direction;
+    double perMin = (tripDurationCounter / 60) * 0.2;
+    double perKM = (direction.distanceValue! / 1000) * 0.3;
+    int total = (perMin + perKM + 3).truncate();
+    return total;
+  }
+
+  updateEarning(int faires) {
+    DatabaseReference fairedb = FirebaseDatabase.instance
+        .ref()
+        .child("driver/${UserData().id}/earning");
+    double earning = (faires.toDouble() * 0.85);
+    fairedb.once().then((DatabaseEvent event) {
+      if (event.snapshot.value != null) {
+        double lastEarning = double.parse(event.snapshot.value.toString());
+        earning += lastEarning;
+      }
+      fairedb.set(earning.toStringAsFixed(2));
     });
   }
 }

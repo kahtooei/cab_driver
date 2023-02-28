@@ -6,6 +6,7 @@ import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
 import 'package:cab_driver/ui/screens/main_screen/pages/accepted_request_page.dart';
 import 'package:cab_driver/ui/screens/main_screen/widget/confirm_sheet.dart';
+import 'package:cab_driver/ui/screens/main_screen/widget/end_trip_dialog.dart';
 import 'package:cab_driver/ui/screens/main_screen/widget/show_notification_dialog.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -103,17 +104,6 @@ class _HomeTabState extends State<HomeTab> {
                         isAvailable: isAvailable,
                         onPress: isAvailable ? goOffline : goOnline),
                   );
-                  // TripRequestModel trip = TripRequestModel(
-                  //     destinationLocation:
-                  //         "destination location for a new location that we want to test it now ",
-                  //     pickupLocation: "pickup location",
-                  //     riderName: "Mohammad Kahtooei",
-                  //     pickupCoordinate: LatLng(26.99803, 54.2134767));
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => AcceptedRequestPage(trip),
-                  //     ));
                 }),
           )),
         )
