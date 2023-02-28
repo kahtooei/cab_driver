@@ -13,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 
 class AcceptedRequestPage extends StatefulWidget {
   final TripRequestModel trip;
@@ -333,11 +334,18 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   }
 
   updateCurrentLocation() {
+    currentLocation = driverLocation;
+    double rotation = 0;
     Geolocator.getPositionStream().listen((Position position) {
+      rotation = mp.SphericalUtil.computeHeading(
+              mp.LatLng(currentLocation.latitude, currentLocation.longitude),
+              mp.LatLng(position.latitude, position.longitude))
+          .toDouble();
       currentLocation = LatLng(position.latitude, position.longitude);
       Marker carLocation = Marker(
           markerId: const MarkerId("carLocation"),
           position: currentLocation,
+          rotation: rotation,
           icon: carIcon!,
           infoWindow: const InfoWindow(title: 'car location'));
       CameraPosition cameraPosition =
