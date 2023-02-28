@@ -7,6 +7,7 @@ import 'package:cab_driver/repository/models/trip_request_model.dart';
 import 'package:cab_driver/shared/resources/user_data.dart';
 import 'package:cab_driver/shared/utils/colors.dart';
 import 'package:cab_driver/ui/widgets/my_custom_buttom.dart';
+import 'package:cab_driver/ui/widgets/progress_dialog.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,8 +25,8 @@ class AcceptedRequestPage extends StatefulWidget {
 }
 
 class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
+  late DatabaseReference ref;
   late GoogleMapController mapController;
-  late LatLng driverLocation;
   late LatLng currentLocation;
 
   Completer<GoogleMapController> _controller = Completer();
@@ -39,7 +40,12 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   Set<Circle> _circles = {};
   double mapPadding = 0;
   bool isLoaded = false;
+  String status = "accepted"; // accepted - arrived - onTrip - endTrip
+  Color buttonColor = MyColors.colorGreen;
+  String buttonTitle = "ARRIVED";
   String duration = "";
+  late Timer timer;
+  int tripDurationCounter = 0;
   BitmapDescriptor? carIcon;
 
   createCarIcon() {
@@ -52,6 +58,14 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
         carIcon = icon;
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    ref = FirebaseDatabase.instance
+        .ref()
+        .child("rideRequest/${widget.trip.requestToken}");
   }
 
   @override
@@ -78,10 +92,16 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                 mapPadding = 270;
               });
               if (!isLoaded) {
-                driverLocation = BlocProvider.of<MainScreenBloc>(context)
+                currentLocation = BlocProvider.of<MainScreenBloc>(context)
                     .state
                     .currentPosition;
                 acceptTrip();
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (context) =>
+                      const ProgressDialog("get pickup direction"),
+                );
                 BlocProvider.of<MainScreenBloc>(context).add(
                     GetRouteDirectionEvent(
                         startPosition: BlocProvider.of<MainScreenBloc>(context)
@@ -90,26 +110,34 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                         endPosition: widget.trip.pickupCoordinate!));
                 isLoaded = true;
               }
+
               updateCurrentLocation();
             },
           ),
           BlocListener<MainScreenBloc, MainScreenState>(
             listenWhen: (previous, current) {
-              if (previous.routeDirection != current.routeDirection &&
-                  current.routeDirection is CompleteDirectionsStatus) {
+              if (previous.routeDirection != current.routeDirection) {
                 return true;
               }
               return false;
             },
             listener: (context, state) {
+              if (state.routeDirection is CompleteDirectionsStatus) {
+                Navigator.pop(context);
+              }
+              LatLng end = LatLng(widget.trip.pickupCoordinate!.latitude,
+                  widget.trip.pickupCoordinate!.longitude);
+              if (status == "arrived") {
+                end = LatLng(widget.trip.destinationCoordinate!.latitude,
+                    widget.trip.destinationCoordinate!.longitude);
+              }
               _points.clear();
               _polylines.clear();
               _markers.clear();
               _circles.clear();
 
               //update polyline for current directions
-              LatLng end = LatLng(widget.trip.pickupCoordinate!.latitude,
-                  widget.trip.pickupCoordinate!.longitude);
+
               DirectionModel direction =
                   (state.routeDirection as CompleteDirectionsStatus).direction;
               String encoded_points = direction.encodedPoints!;
@@ -134,17 +162,17 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
 
               //fitting polyline on map
 
-              LatLngBounds bounds = getBounds(driverLocation, end);
+              LatLngBounds bounds = getBounds(currentLocation, end);
               mapController
                   .animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
 
               //set markers
               Marker startMarker = Marker(
                   markerId: const MarkerId('start'),
-                  position: driverLocation,
+                  position: currentLocation,
                   icon: BitmapDescriptor.defaultMarkerWithHue(
                       BitmapDescriptor.hueRed),
-                  infoWindow: const InfoWindow(snippet: 'Your Location'));
+                  infoWindow: const InfoWindow(title: 'Your Location'));
               Marker endMarker = Marker(
                   markerId: const MarkerId('end'),
                   position: LatLng(widget.trip.pickupCoordinate!.latitude,
@@ -162,7 +190,7 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                   strokeWidth: 5,
                   strokeColor: MyColors.colorGreen,
                   radius: 12,
-                  center: driverLocation,
+                  center: currentLocation,
                   fillColor: MyColors.colorGreen);
 
               Circle endCircle = Circle(
@@ -276,9 +304,45 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
                     children: [
                       Expanded(
                           child: MyCustomButton(
-                        onPress: () {},
-                        title: "ARRIVED",
-                        backgroundColor: MyColors.colorGreen,
+                        onPress: () {
+                          if (status == "accepted") {
+                            showDialog(
+                              barrierDismissible: true,
+                              context: context,
+                              builder: (context) => const ProgressDialog(
+                                  "get destination direction"),
+                            );
+                            BlocProvider.of<MainScreenBloc>(context).add(
+                                GetRouteDirectionEvent(
+                                    startPosition:
+                                        BlocProvider.of<MainScreenBloc>(context)
+                                            .state
+                                            .currentPosition,
+                                    endPosition:
+                                        widget.trip.destinationCoordinate!));
+                            setState(() {
+                              status = "arrived";
+                              buttonTitle = "START TRIP";
+                              buttonColor = MyColors.colorAccentPurple;
+                            });
+                            ref.child("status").set("arrived");
+                          } else if (status == "arrived") {
+                            status = "onTrip";
+                            ref.child("status").set("onTrip");
+                            timer = Timer.periodic(
+                              const Duration(seconds: 1),
+                              (timer) {
+                                tripDurationCounter++;
+                              },
+                            );
+                            setState(() {
+                              buttonTitle = "END TRIP";
+                              buttonColor = Colors.redAccent;
+                            });
+                          }
+                        },
+                        title: buttonTitle,
+                        backgroundColor: buttonColor,
                       )),
                     ],
                   )
@@ -312,9 +376,6 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   }
 
   acceptTrip() {
-    DatabaseReference ref = FirebaseDatabase.instance
-        .ref()
-        .child("rideRequest/${widget.trip.requestToken}");
     ref.once().then((DatabaseEvent event) {
       if (event.snapshot.value != null) {
         UserData driver = UserData();
@@ -324,8 +385,8 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
           "driverName": driver.fullName,
           "driverPhone": driver.phone,
           "driverLocation": {
-            "latitude": driverLocation.latitude,
-            "longitude": driverLocation.longitude
+            "latitude": currentLocation.latitude,
+            "longitude": currentLocation.longitude
           }
         };
         ref.child("driverInfo").set(driverInfo);
@@ -334,7 +395,6 @@ class _AcceptedRequestPageState extends State<AcceptedRequestPage> {
   }
 
   updateCurrentLocation() {
-    currentLocation = driverLocation;
     double rotation = 0;
     Geolocator.getPositionStream().listen((Position position) {
       rotation = mp.SphericalUtil.computeHeading(
